@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NDA Review — AI-Assisted Analysis</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --surface2: #f2f0eb;
+      --border: #e2dfd8;
+      --border2: #ccc9c0;
+      --text: #1a1917;
+      --text2: #5c5a54;
+      --text3: #9a9890;
+      --accent: #1a3a2a;
+      --accent2: #2d6247;
+      --accent-light: #e8f2ec;
+      --red: #b83232;
+      --red-bg: #fdf0f0;
+      --red-border: #f5c0c0;
+      --orange: #9a4a0a;
+      --orange-bg: #fef3eb;
+      --orange-border: #f5c89a;
+      --amber: #8a5c0a;
+      --amber-bg: #fdf6e8;
+      --amber-border: #f5d898;
+      --green: #1e6b3a;
+      --green-bg: #eef7f2;
+      --green-border: #a8dbbe;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font: 'Georgia', 'Times New Roman', serif;
+      --font-ui: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 2rem 2.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-family: var(--font);
+      font-size: 1.6rem;
+      font-weight: normal;
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      font-size: 0.78rem;
+      opacity: 0.65;
+      margin-top: 0.25rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    header .badge {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 100px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    main {
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 2rem 2rem 5rem;
+    }
+
+    .upload-zone {
+      background: var(--surface);
+      border: 2px dashed var(--border2);
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+      border-color: var(--accent2);
+      background: var(--accent-light);
+    }
+
+    .upload-zone input[type="file"] {
+      display: none;
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--surface2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.4rem;
+    }
+
+    .upload-zone h2 {
+      font-family: var(--font);
+      font-size: 1.15rem;
+      font-weight: normal;
+      margin-bottom: 0.4rem;
+    }
+
+    .upload-zone p {
+      font-size: 0.82rem;
+      color: var(--text3);
+    }
+
+    .file-loaded {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+
+    .file-loaded .filename {
+      font-weight: 500;
+      color: var(--green);
+    }
+
+    .file-loaded .filesize {
+      color: var(--text3);
+      margin-left: auto;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .api-row label {
+      font-size: 0.8rem;
+      color: var(--text2);
+      white-space: nowrap;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .api-row input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.55rem 0.85rem;
+      font-size: 0.85rem;
+      font-family: monospace;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .api-row input:focus {
+      border-color: var(--accent2);
+    }
+
+    .run-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.9rem 2rem;
+      font-size: 0.92rem;
+      font-family: var(--font-ui);
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, opacity 0.2s;
+      margin-bottom: 2rem;
+    }
+
+    .run-btn:hover:not(:disabled) {
+      background: var(--accent2);
+    }
+
+    .run-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2.5rem;
+      color: var(--text2);
+    }
+
+    .loading.visible {
+      display: block;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading p {
+      font-size: 0.85rem;
+    }
+
+    .loading .sub {
+      font-size: 0.75rem;
+      color: var(--text3);
+      margin-top: 0.3rem;
+    }
+
+    .results {
+      display: none;
+    }
+
+    .results.visible {
+      display: block;
+    }
+
+    .summary-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .summary-stat .label {
+      font-size: 0.7rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.2rem;
+    }
+
+    .summary-stat .val {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .summary-stat .val.red {
+      color: var(--red);
+    }
+
+    .summary-stat .val.orange {
+      color: var(--orange);
+    }
+
+    .summary-stat .val.amber {
+      color: var(--amber);
+    }
+
+    .summary-stat .val.green {
+      color: var(--green);
+    }
+
+    .summary-verdict {
+      margin-left: auto;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      color: var(--text2);
+      max-width: 280px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .results-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .results-toolbar h2 {
+      font-family: var(--font);
+      font-size: 1.25rem;
+      font-weight: normal;
+    }
+
+    .toolbar-btns {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .outline-btn {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      font-family: var(--font-ui);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .outline-btn:hover {
+      background: var(--surface2);
+    }
+
+    .category-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .category-header h3 {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+
+    .category-header .line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .cat-meta {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .cat-count {
+      font-size: 0.68rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .cat-count.red {
+      background: var(--red-bg);
+      color: var(--red);
+    }
+
+    .cat-count.orange {
+      background: var(--orange-bg);
+      color: var(--orange);
+    }
+
+    .cat-count.amber {
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+
+    .cat-count.all-green {
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .chevron {
+      font-size: 0.7rem;
+      color: var(--text3);
+      transition: transform 0.2s;
+      margin-left: 0.25rem;
+    }
+
+    .chevron.collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .category-body.collapsed {
+      display: none;
+    }
+
+    .check-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.5rem;
+      display: grid;
+      grid-template-columns: 10px 1fr auto;
+      gap: 0 1rem;
+      align-items: start;
+    }
+
+    .check-card.red-card {
+      border-left: 3px solid var(--red);
+    }
+
+    .check-card.orange-card {
+      border-left: 3px solid #d4700a;
+    }
+
+    .check-card.amber-card {
+      border-left: 3px solid #d4a017;
+    }
+
+    .check-card.green-card {
+      border-left: 3px solid #2d8a52;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .status-dot.red {
+      background: var(--red);
+    }
+
+    .status-dot.orange {
+      background: #d4700a;
+    }
+
+    .status-dot.amber {
+      background: #d4a017;
+    }
+
+    .status-dot.green {
+      background: #2d8a52;
+    }
+
+    .check-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .check-finding {
+      font-size: 0.82rem;
+      color: var(--text2);
+      line-height: 1.55;
+      margin-bottom: 0.3rem;
+    }
+
+    .clause-ref {
+      font-size: 0.73rem;
+      color: var(--text3);
+    }
+
+    .clause-ref span {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: var(--text2);
+    }
+
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.4rem;
+    }
+
+    .rag-pill {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.22rem 0.65rem;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .rag-pill.red {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .rag-pill.orange {
+      background: var(--orange-bg);
+      color: var(--orange);
+      border: 1px solid var(--orange-border);
+    }
+
+    .rag-pill.amber {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .rag-pill.green {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .confidence-pill {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .confidence-pill.high {
+      background: var(--surface2);
+      color: var(--text3);
+      border: 1px solid var(--border);
+    }
+
+    .confidence-pill.low {
+      background: #fff3e0;
+      color: #8a5c0a;
+      border: 1px solid #f5d898;
+    }
+
+    .human-flag {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 100px;
+      background: #fff8e6;
+      color: #7a5800;
+      border: 1px solid #f0d070;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .ai-risks-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .ai-risks-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ai-risks-header:hover {
+      background: var(--surface2);
+    }
+
+    .ai-risks-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .ai-risks-title h3 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .ai-risks-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .ai-risks-sub {
+      font-size: 0.75rem;
+      color: var(--text3);
+    }
+
+    .ai-risks-body {
+      padding: 1rem 1.25rem;
+    }
+
+    .ai-risks-body.collapsed {
+      display: none;
+    }
+
+    .risk-item {
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      margin-bottom: 0.6rem;
+      background: var(--surface2);
+    }
+
+    .risk-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .risk-item-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .risk-item-title {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .risk-severity {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.55rem;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .risk-severity.high {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .risk-severity.medium {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .risk-severity.low {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .risk-item-desc {
+      font-size: 0.8rem;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+
+    .no-risks {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text3);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    .bottom-section {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .bottom-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .bottom-card h3 {
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: normal;
+      margin-bottom: 0.25rem;
+    }
+
+    .bottom-card .sub-label {
+      font-size: 0.78rem;
+      color: var(--text3);
+      margin-bottom: 1rem;
+    }
+
+    .bottom-card textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-family: var(--font-ui);
+      color: var(--text);
+      background: var(--surface2);
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.6;
+    }
+
+    .bottom-card textarea:focus {
+      border-color: var(--accent2);
+      background: var(--surface);
+    }
+
+    .bottom-card textarea::placeholder {
+      color: var(--text3);
+    }
+
+    .decision-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .decision-select-wrap {
+      flex-shrink: 0;
+    }
+
+    .decision-select-wrap label,
+    .rationale-wrap label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    .decision-select-wrap select {
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0.55rem 0.85rem;
+      font-size: 0.85rem;
+      font-family: var(--font-ui);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      min-width: 220px;
+    }
+
+    .decision-select-wrap select:focus {
+      border-color: var(--accent2);
+    }
+
+    .rationale-wrap {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .rationale-wrap textarea {
+      min-height: 70px;
+    }
+
+    .decision-badge {
+      display: inline-block;
+      margin-top: 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.3rem 0.85rem;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+
+    .decision-badge.sign {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .decision-badge.conditions {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .decision-badge.nosign {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .decision-badge.pending {
+      background: var(--surface2);
+      color: var(--text3);
+      border: 1px solid var(--border);
+    }
+
+    .legend {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .legend-label {
+      font-size: 0.72rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.25rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--text2);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-dot.red {
+      background: var(--red);
+    }
+
+    .legend-dot.orange {
+      background: #d4700a;
+    }
+
+    .legend-dot.amber {
+      background: #d4a017;
+    }
+
+    .legend-dot.green {
+      background: #2d8a52;
+    }
+
+    .disclaimer {
+      font-size: 0.75rem;
+      color: var(--text3);
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 1rem;
+      margin-top: 1.5rem;
+      border-left: 3px solid var(--border2);
+      line-height: 1.6;
+    }
+
+    .error-box {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      color: var(--red);
+      font-size: 0.85rem;
+      display: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-box.visible {
+      display: block;
+    }
+
+    @media print {
+      header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .run-btn,
+      .api-row,
+      .upload-zone,
+      .file-loaded,
+      .toolbar-btns {
+        display: none !important;
+      }
+
+      .check-card,
+      .bottom-card,
+      .ai-risks-section {
+        break-inside: avoid;
+      }
+
+      .category-body.collapsed,
+      .ai-risks-body.collapsed {
+        display: block !important;
+      }
+    }
+
+    @media (max-width: 620px) {
+      header {
+        padding: 1.5rem;
+      }
+
+      main {
+        padding: 1.25rem 1rem 3rem;
+      }
+
+      .check-card {
+        grid-template-columns: 10px 1fr;
+      }
+
+      .right-col {
+        grid-column: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        margin-top: 0.5rem;
+      }
+
+      .summary-bar {
+        gap: 1rem;
+      }
+
+      .summary-verdict {
+        display: none;
+      }
+
+      .legend {
+        gap: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <h1>NDA Review</h1>
+      <p>AI-Assisted Analysis Tool by Eoin</p>
+    </div>
+    <span class="badge">Powered by Claude</span>
+  </header>
+
+  <main>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".pdf,.txt,.doc,.docx">
+      <div class="upload-icon">📄</div>
+      <h2>Upload NDA Document</h2>
+      <p>Drag and drop, or click to select — PDF or plain text supported</p>
+    </div>
+
+    <div class="file-loaded" id="fileLoaded" style="display:none;">
+      <span>📄</span>
+      <span class="filename" id="fileName"></span>
+      <span class="filesize" id="fileSize"></span>
+      <button onclick="clearFile()"
+        style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:1rem;padding:0 0.25rem;">✕</button>
+    </div>
+
+    <div class="api-row">
+      <label>API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-..." value="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">
+    </div>
+
+    <button class="run-btn" id="runBtn" onclick="runAnalysis()" disabled>Run NDA Analysis</button>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Analysing document against 17 checks and scanning for additional risks…</p>
+      <p class="sub">This may take 20–40 seconds depending on document length</p>
+    </div>
+
+    <div class="results" id="results">
+
+      <div class="results-toolbar">
+        <h2>Analysis Results</h2>
+        <div class="toolbar-btns">
+          <button class="outline-btn" onclick="collapseAll()">Collapse all</button>
+          <button class="outline-btn" onclick="expandAll()">Expand all</button>
+          <button class="outline-btn" onclick="window.print()">Export PDF</button>
+        </div>
+      </div>
+
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <div class="legend">
+        <span class="legend-label">Key:</span>
+        <span class="legend-item"><span class="legend-dot red"></span>High Risk — clause present but actively
+          problematic</span>
+        <span class="legend-item"><span class="legend-dot orange"></span>Missing — clause absent from document</span>
+        <span class="legend-item"><span class="legend-dot amber"></span>Review Required — present but vague or
+          uncertain</span>
+        <span class="legend-item"><span class="legend-dot green"></span>AI Confident — appears standard (human sign-off
+          still required)</span>
+      </div>
+
+      <div id="resultsBody"></div>
+
+      <div class="ai-risks-section" id="aiRisksSection">
+        <div class="ai-risks-header" onclick="toggleAiRisks()">
+          <div class="ai-risks-title">
+            <h3>AI-Identified Additional Risks</h3>
+            <span class="ai-risks-badge" id="aiRisksBadge">—</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <span class="ai-risks-sub">Risks identified outside the standard 17 checks</span>
+            <span class="chevron" id="aiRisksChevron">▾</span>
+          </div>
+        </div>
+        <div class="ai-risks-body" id="aiRisksBody"></div>
+      </div>
+
+      <div class="bottom-section">
+
+        <div class="bottom-card">
+          <h3>Additional Findings</h3>
+          <p class="sub-label">Add any observations from your own review that fall outside the standard checks or AI
+            findings above.</p>
+          <textarea id="additionalFindings"
+            placeholder="e.g. Unusual governing law clause specifying a foreign jurisdiction — recommend legal review before proceeding…"></textarea>
+        </div>
+
+        <div class="bottom-card">
+          <h3>Overall Reviewer Decision</h3>
+          <p class="sub-label">Human sign-off required. AI analysis does not constitute a final decision on whether to
+            proceed.</p>
+          <div class="decision-row">
+            <div class="decision-select-wrap">
+              <label>Decision</label>
+              <select id="decisionSelect" onchange="updateDecisionBadge()">
+                <option value="pending">— Pending review —</option>
+                <option value="sign">Recommend to sign</option>
+                <option value="conditions">Sign with conditions</option>
+                <option value="nosign">Do not sign</option>
+              </select>
+              <div id="decisionBadge" class="decision-badge pending">Pending</div>
+            </div>
+            <div class="rationale-wrap">
+              <label>Rationale</label>
+              <textarea id="rationaleText"
+                placeholder="Summarise the reasoning behind the decision, key risks accepted, or conditions required before signing…"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="disclaimer">
+        <strong>Important:</strong> This analysis is AI-generated and is intended to support — not replace — qualified
+        human legal or commercial review. "High Risk" indicates a clause is actively problematic. "Missing" indicates a
+        clause was not located — absence may or may not be material depending on context. "AI Confident" indicates a
+        clause appears standard on its face — it does not mean the clause has been accepted, approved, or is without
+        risk. All flagged items must be reviewed by an appropriate team member before any decision is made.
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const CHECKS = [
+      { id: 'signing_entity', name: 'Signing Entity', category: 'Parties & Execution' },
+      { id: 'signature_block', name: 'Signature-Block Information', category: 'Parties & Execution' },
+      { id: 'term', name: 'Term of NDA', category: 'Duration & Dates' },
+      { id: 'agreement_dates', name: 'Agreement Dates', category: 'Duration & Dates' },
+      { id: 'expiration', name: 'Expiration of Obligations', category: 'Duration & Dates' },
+      { id: 'reps_sharing', name: 'Information Sharing with Representatives', category: 'Scope of Disclosure' },
+      { id: 'nda_signatories', name: 'Information Sharing with Other NDA Signatories', category: 'Scope of Disclosure' },
+      { id: 'reps_obligations', name: 'Obligations Regarding Representatives', category: 'Scope of Disclosure' },
+      { id: 'retention', name: 'Information Retention Post-Term', category: 'Scope of Disclosure' },
+      { id: 'reps_liability', name: "Liability for Representatives' Breach", category: 'Liability & Risk' },
+      { id: 'indemnification', name: 'Indemnification', category: 'Liability & Risk' },
+      { id: 'remedies', name: 'Remedies', category: 'Liability & Risk' },
+      { id: 'non_solicit', name: 'Non-Solicitation of Staff', category: 'Restrictions' },
+      { id: 'non_circumvention', name: 'Non-Circumvention', category: 'Restrictions' },
+      { id: 'response_time', name: 'Response Time for Counterparty Requests', category: 'Obligations & Process' },
+      { id: 'communications', name: 'Communications', category: 'Obligations & Process' },
+      { id: 'broker_fee', name: 'Broker / Agent Fee', category: 'Commercial Terms' },
+    ];
+
+    const CATEGORIES = [...new Set(CHECKS.map(c => c.category))];
+    let ndaText = '';
+    let analysisData = [];
+    let aiRisksData = [];
+
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault(); uploadZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+    async function handleFile(file) {
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
+      document.getElementById('fileLoaded').style.display = 'flex';
+      uploadZone.style.display = 'none';
+      const ext = file.name.split('.').pop().toLowerCase();
+      ndaText = ext === 'pdf' ? await extractPdfText(file) : await file.text();
+      updateRunBtn();
+    }
+
+    async function extractPdfText(file) {
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(' ') + '\n';
+      }
+      return text;
+    }
+
+    function clearFile() {
+      ndaText = ''; fileInput.value = '';
+      document.getElementById('fileLoaded').style.display = 'none';
+      uploadZone.style.display = 'block';
+      updateRunBtn();
+      document.getElementById('results').classList.remove('visible');
+    }
+
+    function updateRunBtn() {
+      document.getElementById('runBtn').disabled = !ndaText;
+    }
+
+    function buildChecklistPrompt(text) {
+      return `You are a specialist NDA reviewer. Analyse the NDA below against 17 specific checks.
+
+      NDA DOCUMENT:
+      ---
+      ${text.slice(0, 16000)}
+      ---
+
+      Return a JSON array. Each item must have exactly:
+      - "id": the check id as given
+      - "finding": 1-2 sentences on what you found or did not find
+      - "rag": one of "red", "orange", "amber", "green"
+        - red    = clause IS present but actively problematic, one-sided, or dangerous
+        - orange = clause is completely ABSENT / missing from the document
+        - amber  = clause present but vague, incomplete, or uncertain
+        - green  = clause present and appears standard (human sign-off still required)
+      - "clause_ref": clause/section number where found (e.g. "Clause 4.2") — or "Not found" if absent
+      - "confidence": "high" or "low"
+      - "human_review": true or false
+
+      CHECKS:
+      ${CHECKS.map(c => `- id: "${c.id}" | ${c.name}`).join('\n')}
+
+      SPECIAL: broker_fee — if PRESENT flag orange or red (unusual in NDA); if ABSENT flag green.
+
+      Return ONLY a valid JSON array. No markdown, no preamble. All 17 checks must appear.`;
+    }
+
+    function buildRisksPrompt(text) {
+      return `You are a specialist NDA reviewer. Read the NDA below and identify any risks, unusual clauses, or concerning language that fall OUTSIDE the following standard checks:
+
+      Standard checks already covered (do NOT repeat these):
+      ${CHECKS.map(c => c.name).join(', ')}
+
+      NDA DOCUMENT:
+      ---
+      ${text.slice(0, 16000)}
+      ---
+
+      Identify up to 6 additional risks or unusual findings. For each return:
+      - "title": short name for the issue (5 words max)
+      - "description": 1-2 sentences explaining the risk and why it matters
+      - "severity": "high", "medium", or "low"
+      - "clause_ref": where in the document (e.g. "Clause 3.1") or "General" if pervasive
+
+      If you find no additional risks beyond the standard checks, return an empty array.
+
+      Return ONLY a valid JSON array. No markdown, no preamble.`;
+    }
+
+    async function callClaude(apiKey, prompt) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 4000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'API error ' + response.status);
+      }
+      const data = await response.json();
+      let raw = data.content.map(b => b.text || '').join('');
+      raw = raw.replace(/```json|```/g, '').trim();
+      return JSON.parse(raw);
+    }
+
+    async function runAnalysis() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      hideError();
+      document.getElementById('loading').classList.add('visible');
+      document.getElementById('results').classList.remove('visible');
+      document.getElementById('runBtn').disabled = true;
+
+      try {
+        const [checks, risks] = await Promise.all([
+          callClaude(apiKey, buildChecklistPrompt(ndaText)),
+          callClaude(apiKey, buildRisksPrompt(ndaText))
+        ]);
+        analysisData = checks;
+        aiRisksData = risks;
+        renderResults();
+      } catch (err) {
+        showError('Analysis failed: ' + err.message);
+      } finally {
+        document.getElementById('loading').classList.remove('visible');
+        document.getElementById('runBtn').disabled = false;
+      }
+    }
+
+    function ragLabel(rag) {
+      if (rag === 'red') return 'High Risk';
+      if (rag === 'orange') return 'Missing';
+      if (rag === 'amber') return 'Review Required';
+      return 'AI Confident';
+    }
+
+    function renderResults() {
+      const counts = { red: 0, orange: 0, amber: 0, green: 0 };
+      analysisData.forEach(item => { if (counts[item.rag] !== undefined) counts[item.rag]++; });
+      const humanCount = analysisData.filter(i => i.human_review).length;
+
+      let verdict = '';
+      if (counts.red >= 2)
+        verdict = 'Significant issues identified. Do not proceed without thorough legal review.';
+      else if (counts.red === 1)
+        verdict = 'A high-risk clause was identified. Human legal review required before any decision.';
+      else if (counts.orange >= 4)
+        verdict = 'Several standard clauses are absent. Assess materiality before proceeding.';
+      else if (counts.amber >= 3)
+        verdict = 'Multiple clauses warrant closer review. Escalate flagged items before proceeding.';
+      else
+        verdict = 'Document appears broadly standard. Review flagged items before signing.';
+
+      document.getElementById('summaryBar').innerHTML = `
+    <div class="summary-stat"><div class="label">High Risk</div><div class="val red">${counts.red}</div></div>
+    <div class="summary-stat"><div class="label">Missing</div><div class="val orange">${counts.orange}</div></div>
+    <div class="summary-stat"><div class="label">Review Required</div><div class="val amber">${counts.amber}</div></div>
+    <div class="summary-stat"><div class="label">AI Confident</div><div class="val green">${counts.green}</div></div>
+    <div class="summary-stat"><div class="label">Human judgement needed</div><div class="val" style="font-size:1.1rem;color:var(--amber)">${humanCount} of ${analysisData.length}</div></div>
+    <div class="summary-verdict">${verdict}</div>
+  `;
+
+      const dataMap = {};
+      analysisData.forEach(item => { dataMap[item.id] = item; });
+
+      const body = document.getElementById('resultsBody');
+      body.innerHTML = '';
+
+      CATEGORIES.forEach(cat => {
+        const checks = CHECKS.filter(c => c.category === cat);
+        const catItems = checks.map(c => dataMap[c.id]).filter(Boolean);
+        const redCount = catItems.filter(i => i.rag === 'red').length;
+        const orangeCount = catItems.filter(i => i.rag === 'orange').length;
+        const amberCount = catItems.filter(i => i.rag === 'amber').length;
+
+        let countBadge = '';
+        if (redCount > 0) countBadge = `<span class="cat-count red">${redCount} high risk</span>`;
+        else if (orangeCount > 0) countBadge = `<span class="cat-count orange">${orangeCount} missing</span>`;
+        else if (amberCount > 0) countBadge = `<span class="cat-count amber">${amberCount} review</span>`;
+        else countBadge = `<span class="cat-count all-green">All confident</span>`;
+
+        const section = document.createElement('div');
+        section.className = 'category-section';
+        section.innerHTML = `
+      <div class="category-header" onclick="toggleCategory(this)">
+        <h3>${cat}</h3>
+        <div class="line"></div>
+        <div class="cat-meta">${countBadge}<span class="chevron">▾</span></div>
+      </div>
+      <div class="category-body"></div>
+    `;
+
+        const catBody = section.querySelector('.category-body');
+
+        checks.forEach(check => {
+          const item = dataMap[check.id] || { finding: 'No data returned.', rag: 'orange', clause_ref: 'Not found', confidence: 'low', human_review: true };
+          const card = document.createElement('div');
+          card.className = `check-card ${item.rag}-card`;
+
+          const clauseHtml = item.clause_ref && item.clause_ref !== 'Not found'
+            ? `<div class="clause-ref">Found at <span>${item.clause_ref}</span></div>`
+            : `<div class="clause-ref" style="color:var(--text3);font-style:italic;">Not located in document</div>`;
+
+          const confidenceHtml = item.rag === 'green'
+            ? `<span class="confidence-pill ${item.confidence === 'low' ? 'low' : 'high'}">${item.confidence === 'low' ? 'Low confidence' : 'AI Confident'}</span>`
+            : '';
+
+          card.innerHTML = `
+        <div class="status-dot ${item.rag}"></div>
+        <div>
+          <div class="check-name">${check.name}</div>
+          <div class="check-finding">${item.finding}</div>
+          ${clauseHtml}
+        </div>
+        <div class="right-col">
+          <span class="rag-pill ${item.rag}">${ragLabel(item.rag)}</span>
+          ${confidenceHtml}
+          ${item.human_review ? '<span class="human-flag">⚑ Human review</span>' : ''}
+        </div>
+      `;
+          catBody.appendChild(card);
+        });
+
+        body.appendChild(section);
+      });
+
+      renderAiRisks();
+
+      document.getElementById('results').classList.add('visible');
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderAiRisks() {
+      const badge = document.getElementById('aiRisksBadge');
+      const body = document.getElementById('aiRisksBody');
+
+      if (!aiRisksData || aiRisksData.length === 0) {
+        badge.textContent = '0 found';
+        badge.style.background = 'var(--green-bg)';
+        badge.style.color = 'var(--green)';
+        badge.style.borderColor = 'var(--green-border)';
+        body.innerHTML = '<div class="no-risks">No additional risks identified outside the standard checks.</div>';
+        return;
+      }
+
+      const highCount = aiRisksData.filter(r => r.severity === 'high').length;
+      badge.textContent = `${aiRisksData.length} found${highCount > 0 ? ` — ${highCount} high` : ''}`;
+
+      body.innerHTML = '';
+      aiRisksData.forEach(risk => {
+        const div = document.createElement('div');
+        div.className = 'risk-item';
+        div.innerHTML = `
+      <div class="risk-item-header">
+        <div class="risk-item-title">${risk.title}</div>
+        <span class="risk-severity ${risk.severity}">${risk.severity} severity</span>
+      </div>
+      <div class="risk-item-desc">${risk.description}</div>
+      ${risk.clause_ref ? `<div class="clause-ref" style="margin-top:0.35rem;">Reference: <span>${risk.clause_ref}</span></div>` : ''}
+    `;
+        body.appendChild(div);
+      });
+    }
+
+    function toggleCategory(header) {
+      const body = header.nextElementSibling;
+      body.classList.toggle('collapsed');
+      header.querySelector('.chevron').classList.toggle('collapsed', body.classList.contains('collapsed'));
+    }
+
+    function toggleAiRisks() {
+      const body = document.getElementById('aiRisksBody');
+      const chevron = document.getElementById('aiRisksChevron');
+      body.classList.toggle('collapsed');
+      chevron.classList.toggle('collapsed', body.classList.contains('collapsed'));
+    }
+
+    function collapseAll() {
+      document.querySelectorAll('.category-body').forEach(b => b.classList.add('collapsed'));
+      document.querySelectorAll('.category-header .chevron').forEach(c => c.classList.add('collapsed'));
+    }
+
+    function expandAll() {
+      document.querySelectorAll('.category-body').forEach(b => b.classList.remove('collapsed'));
+      document.querySelectorAll('.category-header .chevron').forEach(c => c.classList.remove('collapsed'));
+    }
+
+    function updateDecisionBadge() {
+      const val = document.getElementById('decisionSelect').value;
+      const badge = document.getElementById('decisionBadge');
+      const labels = { pending: 'Pending', sign: 'Recommend to sign', conditions: 'Sign with conditions', nosign: 'Do not sign' };
+      badge.textContent = labels[val];
+      badge.className = 'decision-badge ' + val;
+    }
+
+    function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.classList.add('visible'); }
+    function hideError() { document.getElementById('errorBox').classList.remove('visible'); }
+  </script>
+</body>
+
+</html>
